@@ -1,0 +1,19 @@
+config:
+  target: "http://localhost:8000"
+  phases:
+    - duration: 60
+      arrivalRate: 5 # Starts with 5 users per second
+      rampTo: 50     # Ramps up to 50 users per second over a minute
+  defaults:
+    headers:
+      Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjYjcyZWM3ZS1kMzEzLTQyYjItOTRmNi02NWNiYTMzY2EwOTQiLCJwaG9uZSI6IjI0NTcxMjM0NTY3OCIsImlhdCI6MTc3NjA3ODc2MywiZXhwIjoxNzc2MDgyMzYzfQ.KfRQmwGehaPqmH8hJsQwT9XFzJ4amiR0pfLZnuRT4-Q"
+
+scenarios:
+  - name: "Bulk Withdrawal Simulation"
+    flow:
+      - post:
+          url: "/api/v1/withdraw"
+          json:
+            userId: "cb72ec7e-d313-42b2-94f6-65cba33ca094"
+            phoneNumber: "254712345678"
+            amount: 10

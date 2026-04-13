@@ -1,0 +1,48 @@
+{"level":"info","message":"[Worker] Processing transaction 14748883-089c-4f87-9b48-e68cdeb82844 for 254712345678"}
+{"level":"error","message":"[Worker Error] Job 49ae0557-f560-4593-bf4c-93ab4ea8308d:"}
+{"level":"error","message":"[CRITICAL] Job 49ae0557-f560-4593-bf4c-93ab4ea8308d failed for Tx: 14748883-089c-4f87-9b48-e68cdeb82844. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 49ae0557-f560-4593-bf4c-93ab4ea8308d"}
+{"level":"info","message":"[Worker] Processing transaction 14748883-089c-4f87-9b48-e68cdeb82844 for 254712345678"}
+{"level":"error","message":"[Worker Error] Job 49ae0557-f560-4593-bf4c-93ab4ea8308d:"}
+{"level":"error","message":"[CRITICAL] Job 49ae0557-f560-4593-bf4c-93ab4ea8308d failed for Tx: 14748883-089c-4f87-9b48-e68cdeb82844. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 49ae0557-f560-4593-bf4c-93ab4ea8308d"}
+{"level":"info","message":"[Worker] Processing transaction 14748883-089c-4f87-9b48-e68cdeb82844 for 254712345678"}
+{"level":"error","message":"[Worker Error] Job 49ae0557-f560-4593-bf4c-93ab4ea8308d:"}
+{"level":"error","message":"[CRITICAL] Job 49ae0557-f560-4593-bf4c-93ab4ea8308d failed for Tx: 14748883-089c-4f87-9b48-e68cdeb82844. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 49ae0557-f560-4593-bf4c-93ab4ea8308d"}
+{"level":"info","message":"[Worker] Processing transaction 8d412521-c15d-42bc-925b-54be3e6b77e6 for 254792651994"}
+{"level":"error","message":"[Worker Error] Job 0dfde087-9c28-4ec7-a5e8-90f66f9f2353:"}
+{"level":"error","message":"[CRITICAL] Job 0dfde087-9c28-4ec7-a5e8-90f66f9f2353 failed for Tx: 8d412521-c15d-42bc-925b-54be3e6b77e6. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 0dfde087-9c28-4ec7-a5e8-90f66f9f2353"}
+{"level":"info","message":"[Worker] Processing transaction 8d412521-c15d-42bc-925b-54be3e6b77e6 for 254792651994"}
+{"level":"error","message":"[Worker Error] Job 0dfde087-9c28-4ec7-a5e8-90f66f9f2353:"}
+{"level":"error","message":"[CRITICAL] Job 0dfde087-9c28-4ec7-a5e8-90f66f9f2353 failed for Tx: 8d412521-c15d-42bc-925b-54be3e6b77e6. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 0dfde087-9c28-4ec7-a5e8-90f66f9f2353"}
+{"level":"info","message":"[Worker] Processing transaction 8d412521-c15d-42bc-925b-54be3e6b77e6 for 254792651994"}
+{"level":"error","message":"[Worker Error] Job 0dfde087-9c28-4ec7-a5e8-90f66f9f2353:"}
+{"level":"error","message":"[CRITICAL] Job 0dfde087-9c28-4ec7-a5e8-90f66f9f2353 failed for Tx: 8d412521-c15d-42bc-925b-54be3e6b77e6. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 0dfde087-9c28-4ec7-a5e8-90f66f9f2353"}
+{"level":"info","message":"[Worker] Processing transaction 5be4e830-af1b-419c-b3f3-52d4a088f897 for 254712345678"}
+{"level":"error","message":"[Worker Error] Job 78148935-b5b1-4f83-a23a-ba572f80c7ec:"}
+{"level":"error","message":"[CRITICAL] Job 78148935-b5b1-4f83-a23a-ba572f80c7ec failed for Tx: 5be4e830-af1b-419c-b3f3-52d4a088f897. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 78148935-b5b1-4f83-a23a-ba572f80c7ec"}
+{"level":"info","message":"[Worker] Processing transaction 5be4e830-af1b-419c-b3f3-52d4a088f897 for 254712345678"}
+{"level":"error","message":"[Worker Error] Job 78148935-b5b1-4f83-a23a-ba572f80c7ec:"}
+{"level":"error","message":"[CRITICAL] Job 78148935-b5b1-4f83-a23a-ba572f80c7ec failed for Tx: 5be4e830-af1b-419c-b3f3-52d4a088f897. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 78148935-b5b1-4f83-a23a-ba572f80c7ec"}
+{"level":"info","message":"[Worker] Processing transaction 5be4e830-af1b-419c-b3f3-52d4a088f897 for 254712345678"}
+{"level":"error","message":"[Worker Error] Job 78148935-b5b1-4f83-a23a-ba572f80c7ec:"}
+{"level":"error","message":"[CRITICAL] Job 78148935-b5b1-4f83-a23a-ba572f80c7ec failed for Tx: 5be4e830-af1b-419c-b3f3-52d4a088f897. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 78148935-b5b1-4f83-a23a-ba572f80c7ec"}
+{"level":"info","message":"[Worker] Processing transaction 46932a7b-e7ca-49b9-a009-5ddb3298f57c for 254712345678"}
+{"level":"error","message":"[Worker Error] Job 5b06e929-a479-40cd-a943-641bd1d58cb4:"}
+{"level":"error","message":"[CRITICAL] Job 5b06e929-a479-40cd-a943-641bd1d58cb4 failed for Tx: 46932a7b-e7ca-49b9-a009-5ddb3298f57c. Error: Failed to authenticate with Safaricom."}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 5b06e929-a479-40cd-a943-641bd1d58cb4"}
+{"level":"info","message":"[Worker] Processing transaction 46932a7b-e7ca-49b9-a009-5ddb3298f57c for 254712345678"}
+{"level":"error","message":"[Worker Error] Job 5b06e929-a479-40cd-a943-641bd1d58cb4:"}
+{"level":"error","message":"[CRITICAL] Job 5b06e929-a479-40cd-a943-641bd1d58cb4 failed for Tx: 46932a7b-e7ca-49b9-a009-5ddb3298f57c. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 5b06e929-a479-40cd-a943-641bd1d58cb4"}
+{"level":"info","message":"[Worker] Processing transaction 46932a7b-e7ca-49b9-a009-5ddb3298f57c for 254712345678"}
+{"level":"error","message":"[Worker Error] Job 5b06e929-a479-40cd-a943-641bd1d58cb4:"}
+{"level":"error","message":"[CRITICAL] Job 5b06e929-a479-40cd-a943-641bd1d58cb4 failed for Tx: 46932a7b-e7ca-49b9-a009-5ddb3298f57c. Error: Request failed with status code 400"}
+{"level":"info","message":"[REVERSAL] Successfully refunded 500 for failed Job 5b06e929-a479-40cd-a943-641bd1d58cb4"}
