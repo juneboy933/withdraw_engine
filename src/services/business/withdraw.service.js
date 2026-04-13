@@ -44,6 +44,7 @@ export const processWithdrawal = async (userId, phoneNumber, amount, idempotency
         // Push to worker queue
         await payoutQueue.add('process-B2C-payout', {
             transactionId: txId,
+            userId,
             phoneNumber,
             amount,
             idempotencyKey

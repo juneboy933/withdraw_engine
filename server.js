@@ -1,26 +1,23 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import withdrawalRoutes from './src/routes/payout.routes.js';
-import { initiateDB } from './src/database/database.tables.js';
+import userRoutes from './src/routes/user.routes.js';
+import { validateAppEnv } from './src/config/validator.js';
+import { runMigrations } from './src/database/runMigrations.js';
 import { payoutQueue } from './src/queues/payout.queue.js';
 import { pool } from './src/database/database.config.js';
-import userRoutes from './src/routes/user.routes.js';
+import { requestLogger } from './src/middlewares/requestLogger.middleware.js';
+import { notFoundHandler, errorHandler } from './src/middlewares/error.middleware.js';
 
 dotenv.config();
+validateAppEnv();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Initiate Database
-initiateDB()
-    .then(() => console.log('Database Tables Verified'))
-    .catch(err => {
-        console.error('DB Initialization Failed:', err);
-        process.exit(1);
-    });
-
-// Middleware
+app.set('trust proxy', true);
 app.use(express.json());
+app.use(requestLogger);
 
 // Routes
 app.use('/api/v1', withdrawalRoutes);
@@ -34,6 +31,22 @@ app.get('/health', (_, res) => {
         status: 'OK'
     });
 });
+
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+let payoutWorker;
+
+try {
+    await runMigrations();
+    const workerModule = await import('./src/workers/payout.worker.js');
+    payoutWorker = workerModule.payoutWorker;
+    console.log('✔ Database migrations complete');
+    console.log('✔ Payout worker initialized');
+} catch (error) {
+    console.error('Initialization failed:', error);
+    process.exit(1);
+}
 
 // Assign to 'server' so the shutdown function can access it
 const server = app.listen(PORT, () => {
@@ -52,11 +65,14 @@ const shutdown = async (signal) => {
     }
 
     try {
-        // 2. Close BullMQ Queue connections
+        if (payoutWorker) {
+            await payoutWorker.close();
+            console.log('✔ Payout worker closed.');
+        }
+
         await payoutQueue.close();
         console.log('✔ BullMQ Queue connections closed.');
 
-        // 3. Drain the Postgres Pool
         await pool.end();
         console.log('✔ Postgres pool has ended.');
 

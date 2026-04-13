@@ -5,8 +5,7 @@ import { initiateB2CWithdrawal } from "../services/mpesa/mpesa.service.js";
 import { logger } from "../utils/logger.utils.js";
 
 const worker = new Worker('payout-tasks', async (job) => {
-    const { phoneNumber, amount, idempotencyKey, transactionId } = job.data;
-    console.log(`[Worker] Processing transaction ${transactionId} for ${phoneNumber}`);
+    const { phoneNumber, amount, idempotencyKey, transactionId, userId } = job.data;
     logger.info(`[Worker] Processing transaction ${transactionId} for ${phoneNumber}`);
 
     try {
@@ -17,21 +16,22 @@ const worker = new Worker('payout-tasks', async (job) => {
 
         // Call Safaricom
         const mpesaRes = await initiateB2CWithdrawal(
-            phoneNumber, 
-            amount, 
+            phoneNumber,
+            amount,
             `Withdrawal processed by Withdrawal Engine`,
             idempotencyKey
         );
-        console.log(`[Worker] M-Pesa Response:`, mpesaRes.ResponseDescription);
+        logger.info(`[Worker] M-Pesa Response: ${mpesaRes.ResponseDescription}`);
 
         return mpesaRes;
     } catch (error) {
-        console.error(`[Worker Error] Job ${job.id}:`, error.message);
-        logger.error(`[Worker Error] Job ${job.id}:`, error.message);
+        logger.error(`[Worker Error] Job ${job.id}: ${error.message}`);
         // Throwing here tells BullMQ to retry based on our backoff settings
         throw error;
     }
 }, { connection});
+
+export const payoutWorker = worker;
 
 worker.on('failed', async (job, err) => {
     const { transactionId, amount, userId } = job.data;
@@ -70,3 +70,23 @@ worker.on('failed', async (job, err) => {
         client.release();
     }
 });
+
+worker.on('error', (error) => {
+    logger.error(`[Worker] Unexpected worker error: ${error.message}`, {
+        stack: error.stack
+    });
+});
+
+const shutdownWorker = async () => {
+    try {
+        await worker.close();
+        logger.info('✔ Payout worker closed cleanly');
+        process.exit(0);
+    } catch (error) {
+        logger.error('❌ Failed to close payout worker gracefully', error);
+        process.exit(1);
+    }
+};
+
+process.on('SIGTERM', shutdownWorker);
+process.on('SIGINT', shutdownWorker);

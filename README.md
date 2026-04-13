@@ -9,6 +9,8 @@ A robust, production-ready Node.js withdrawal processing system that integrates 
 - **Job Queue System**: BullMQ-based asynchronous job processing for reliable payout execution
 - **Ledger Tracking**: Complete transaction and ledger logging for audit trails
 - **Idempotency**: Built-in idempotency key support to prevent duplicate transactions
+- **Worker Queue**: Dedicated BullMQ payout worker with retry and refund handling
+- **Migration Runner**: Database migration system for schema versioning
 - **Callback Handling**: M-Pesa callback webhook processing for transaction status updates
 - **Graceful Shutdown**: Proper cleanup and connection management during application shutdown
 - **Health Checks**: Built-in health check endpoint for monitoring
@@ -42,7 +44,9 @@ withdrawal-engine/
     │       └── mpesa.service.js            # M-Pesa API integration
     ├── database/
     │   ├── database.config.js              # PostgreSQL pool configuration
-    │   └── database.tables.js              # Database schema initialization
+    │   ├── migrate.js                      # Manual migration runner entrypoint
+    │   ├── runMigrations.js                # Schema migration logic
+    │   └── database.tables.js              # Legacy schema initialization helper
     ├── queues/
     │   ├── queue.config.js                 # Redis/BullMQ configuration
     │   └── payout.queue.js                 # Payout job queue setup
@@ -86,6 +90,10 @@ withdrawal-engine/
    MPESA_TOKEN_URL=https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials
    MPESA_B2C_URL=https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest
    INITIATOR_NAME=your_initiator_name
+   SECURITY_CREDENTIALS=your_security_credentials
+   MPESA_SHORTCODE=your_shortcode
+   CALLBACK_URL=https://your-domain.com/api/v1/mpesa/callback
+   MPESA_WHITELISTED_IPS=196.201.214.200,196.201.214.206,196.201.213.114,196.201.214.207,196.201.214.208,196.50.137.33
    ```
 
 ## Getting Started
@@ -95,7 +103,10 @@ withdrawal-engine/
    - Redis server is running
 
 2. **Initialize the database**
-   The application will automatically create necessary tables on startup if they don't exist.
+   Run migrations before the application starts:
+   ```bash
+   npm run migrate
+   ```
 
 3. **Start the development server**
    ```bash
@@ -105,6 +116,11 @@ withdrawal-engine/
    Or for production:
    ```bash
    npm start
+   ```
+
+4. **Start the payout worker**
+   ```bash
+   npm run worker
    ```
 
 4. **Verify the service is running**
@@ -239,7 +255,7 @@ Uses `nodemon` for automatic server restart on file changes.
 ```bash
 npm test
 ```
-Note: Test suite is not yet configured. See [Contributing](#contributing).
+This project includes validation tests for configuration and callback IP handling.
 
 ## Deployment
 

@@ -2,6 +2,10 @@ import { pool } from "../database/database.config.js";
 
 export const mpesaCallback = async (req, res) => {
     const { Result } = req.body;
+    if (!Result || !Result.OriginatorConversationID) {
+        return res.status(400).json({ error: 'Invalid callback payload.' });
+    }
+
     const conversationId = Result.OriginatorConversationID;
     const resultCode = Result.ResultCode;
     const resultDesc = Result.ResultDesc;
