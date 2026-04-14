@@ -5,7 +5,7 @@ export const authMiddleware = (req, res, next) => {
 
     if(!authHeader || !authHeader.startsWith('Bearer ')){
         return res.status(401).json({
-            error: 'Unauthprized: Missing or malformed token.'
+            error: 'Unauthorized: Missing or malformed token.'
         })
     }
 
