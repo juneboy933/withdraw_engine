@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
 import withdrawalRoutes from './src/routes/payout.routes.js';
 import userRoutes from './src/routes/user.routes.js';
 import { validateAppEnv } from './src/config/validator.js';
@@ -14,9 +15,12 @@ validateAppEnv();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+const trustProxy = process.env.TRUST_PROXY === 'true';
 
-app.set('trust proxy', true);
-app.use(express.json());
+app.set('trust proxy', trustProxy);
+app.use(helmet());
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: false, limit: '10kb' }));
 app.use(requestLogger);
 
 // Routes

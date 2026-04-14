@@ -9,65 +9,44 @@ const worker = new Worker('payout-tasks', async (job) => {
     logger.info(`[Worker] Processing transaction ${transactionId} for ${phoneNumber}-${userId}`);
 
     try {
-        // Update transaction status from Pending to Processing
-        await pool.query(`
-            UPDATE transactions SET status = 'Processing' WHERE id = $1    
-        `, [transactionId]);
+        const updateRes = await pool.query(
+            'UPDATE transactions SET status = $1 WHERE id = $2 AND status = $3',
+            ['Processing', transactionId, 'Pending']
+        );
 
-        // Call Safaricom
+        if (updateRes.rowCount === 0) {
+            logger.warn(`[Worker] Transaction ${transactionId} is not pending and will still be attempted.`);
+        }
+
         const mpesaRes = await initiateB2CWithdrawal(
             phoneNumber,
             amount,
-            `Withdrawal processed by Withdrawal Engine`,
+            'Withdrawal processed by Withdrawal Engine',
             idempotencyKey
         );
-        logger.info(`[Worker] M-Pesa Response: ${mpesaRes.ResponseDescription}`);
 
+        logger.info(`[Worker] M-Pesa Response: ${mpesaRes.ResponseDescription}`);
         return mpesaRes;
     } catch (error) {
         logger.error(`[Worker Error] Job ${job.id}: ${error.message}`);
-        // Throwing here tells BullMQ to retry based on our backoff settings
         throw error;
     }
-}, { connection});
+}, { connection });
 
 export const payoutWorker = worker;
 
 worker.on('failed', async (job, err) => {
-    const { transactionId, amount, userId } = job.data;
-    
-    logger.error(`[CRITICAL] Job ${job.id} failed for Tx: ${transactionId}. Error: ${err.message}`);
+    const { transactionId } = job.data;
 
-    // Logic to auto-refund the user since the B2C request never successfully fired
-    const client = await pool.connect();
+    logger.error(`[CRITICAL] Job ${job.id} failed after retries for Tx: ${transactionId}. Error: ${err.message}`);
+
     try {
-        await client.query('BEGIN');
-
-        // 1. Mark transaction as Failed
-        await client.query(`
-            UPDATE transactions SET status = 'Failed', description = 'System Failure: Exhausted Retries' 
-            WHERE id = $1 AND status != 'Success'
-        `, [transactionId]);
-
-        // 2. Refund the account balance
-        await client.query(`
-            UPDATE accounts SET balance = balance + $1, updated_at = NOW() 
-            WHERE user_id = $2
-        `, [amount, userId]);
-
-        // 3. Log the reversal in ledger
-        await client.query(`
-            INSERT INTO ledger (transaction_id, amount, entry_type)
-            VALUES ($1, $2, 'credit')
-        `, [transactionId, amount]);
-
-        await client.query('COMMIT');
-        logger.info(`[REVERSAL] Successfully refunded ${amount} for failed Job ${job.id}`);
-    } catch (reversalErr) {
-        await client.query('ROLLBACK');
-        logger.error(`[FATAL] Reversal failed for Job ${job.id}: ${reversalErr.message}`);
-    } finally {
-        client.release();
+        await pool.query(
+            'UPDATE transactions SET status = $1, description = $2 WHERE id = $3 AND status != $4',
+            ['Failed', `Worker execution failed: ${err.message}`, transactionId, 'Success']
+        );
+    } catch (updateErr) {
+        logger.error(`[FATAL] Failed to update transaction status for failed job ${job.id}: ${updateErr.message}`);
     }
 });
 

@@ -12,24 +12,24 @@ const getMpesaToken = async () => {
 
     try {
         const mpesaRes = await axios.get(tokenUrl, {
-            headers: { Authorization: `Basic ${auth}`}
+            headers: { Authorization: `Basic ${auth}` }
         });
-    
+
         return mpesaRes.data.access_token;
     } catch (error) {
-        console.log("Mpesa Token Error:", error.res?.data || error.message);
-        throw new Error("Failed to authenticate with Safaricom.");
+        console.error('Mpesa Token Error:', error.response?.data || error.message);
+        throw new Error('Failed to authenticate with Safaricom.');
     }
-}; 
+};
 
-export const initiateB2CWithdrawal = async (phoneNumber, amount, remarks, idempotencyKey )=> {
+export const initiateB2CWithdrawal = async (phoneNumber, amount, remarks, idempotencyKey) => {
     const token = await getMpesaToken();
     const B2C_URL = process.env.MPESA_B2C_URL;
 
     const data = {
         InitiatorName: process.env.INITIATOR_NAME,
         SecurityCredential: process.env.SECURITY_CREDENTIALS,
-        CommandID: "BusinessPayment",
+        CommandID: 'BusinessPayment',
         Amount: amount,
         PartyA: process.env.MPESA_SHORTCODE,
         PartyB: phoneNumber,
@@ -41,7 +41,7 @@ export const initiateB2CWithdrawal = async (phoneNumber, amount, remarks, idempo
     };
 
     const res = await axios.post(B2C_URL, data, {
-        headers: { Authorization: `Bearer ${token}`}
+        headers: { Authorization: `Bearer ${token}` }
     });
 
     return res.data;

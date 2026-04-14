@@ -94,6 +94,7 @@ withdrawal-engine/
    MPESA_SHORTCODE=your_shortcode
    CALLBACK_URL=https://your-domain.com/api/v1/mpesa/callback
    MPESA_WHITELISTED_IPS=196.201.214.200,196.201.214.206,196.201.213.114,196.201.214.207,196.201.214.208,196.50.137.33
+   TRUST_PROXY=false
    ```
 
 ## Getting Started
@@ -133,12 +134,16 @@ withdrawal-engine/
 ### 1. Submit Withdrawal Request
 **POST** `/api/v1/withdraw`
 
-Submit a withdrawal request to be processed.
+Submit a withdrawal request to be processed. The request must include a valid JWT bearer token in the `Authorization` header.
+
+**Headers:**
+```http
+Authorization: Bearer <jwt-token>
+```
 
 **Request Body:**
 ```json
 {
-  "userId": "user_123",
   "phoneNumber": "+254712345678",
   "amount": 500
 }
@@ -149,7 +154,7 @@ Submit a withdrawal request to be processed.
 {
   "success": true,
   "message": "Withdrawal request accepted and is being processed.",
-  "transactionId": 42,
+  "transactionId": "550e8400-e29b-41d4-a716-446655440000",
   "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
