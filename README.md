@@ -294,95 +294,178 @@ This project includes validation tests for configuration and callback IP handlin
 
 ## Deployment
 
-### Production Setup
+### Docker Production Deployment
 
-For production deployment, run the web server and worker as separate processes:
+This application is containerized and ready for production deployment using Docker and Docker Compose.
 
-1. **Web Server** (handles HTTP requests):
+#### Prerequisites
+
+- Docker and Docker Compose installed
+- Linux/Windows/Mac server with at least 2GB RAM
+- Domain name with SSL certificate (recommended)
+
+#### Quick Start Deployment
+
+1. **Clone and configure**
    ```bash
-   npm start
+   git clone https://github.com/juneboy933/withdraw_engine.git
+   cd withdraw_engine
+   cp .env.production.example .env.production
+   # Edit .env.production with your production values
    ```
 
-2. **Worker Process** (processes payout jobs):
+2. **Deploy with one command**
    ```bash
-   npm run worker
+   # On Linux/Mac: chmod +x deploy.sh && ./deploy.sh
+   # On Windows: Run deploy.sh with bash or WSL
+   ./deploy.sh
    ```
 
-3. **Database Migrations** (run once or via CI/CD):
+3. **Verify deployment**
    ```bash
-   npm run migrate
+   # On Linux/Mac: ./health-check.sh
+   # On Windows: Run health-check.sh with bash or WSL
+   ./health-check.sh
    ```
 
-4. **Reconciliation** (run periodically or on-demand):
+#### Manual Deployment Steps
+
+1. **Configure environment**
    ```bash
-   npm run reconcile
+   cp .env.production.example .env.production
+   # Edit .env.production with your production values
    ```
 
-### Process Management
+2. **Build and start services**
+   ```bash
+   docker-compose build
+   docker-compose up -d
+   ```
 
-Use a process manager like PM2 for production:
+3. **Run database migrations**
+   ```bash
+   docker-compose exec web npm run migrate
+   ```
 
+4. **Check health**
+   ```bash
+   curl http://localhost:8000/health
+   ```
+
+#### Production Environment Variables
+
+Copy `.env.production.example` to `.env.production` and configure:
+
+- **Database**: Set secure PostgreSQL credentials
+- **Redis**: Configure Redis connection
+- **JWT**: Generate a strong JWT secret (min 32 characters)
+- **M-Pesa**: Configure live M-Pesa credentials (not sandbox)
+- **Security**: Set callback secret for HMAC verification
+- **Domain**: Update callback URL to your production domain
+
+#### Services Overview
+
+The Docker Compose setup includes:
+
+- **web**: Express.js API server (port 8000)
+- **worker**: BullMQ job processor for payouts
+- **postgres**: PostgreSQL database with persistent storage
+- **redis**: Redis for job queuing and caching
+
+#### Deployment Files
+
+- **`Dockerfile`**: Multi-stage Node.js container build with security hardening
+- **`docker-compose.yml`**: Complete stack orchestration with health checks
+- **`.env.production.example`**: Template for production environment variables
+- **`deploy.sh`**: Automated deployment script (Linux/Mac - use WSL on Windows)
+- **`health-check.sh`**: Post-deployment verification script
+- **`render-deployment.md`**: Step-by-step Render cloud deployment guide
+- **`render-check.sh`**: Pre-deployment validation script (Linux/Mac)
+- **`render-check.bat`**: Pre-deployment validation script (Windows)
+
+#### Production Checklist
+
+- [ ] Environment variables configured for production
+- [ ] SSL/TLS certificates configured (nginx reverse proxy recommended)
+- [ ] Database backups scheduled
+- [ ] Redis persistence enabled
+- [ ] Monitoring and alerting set up
+- [ ] Log aggregation configured
+- [ ] Firewall rules configured
+- [ ] Rate limiting tested
+- [ ] M-Pesa live credentials configured
+- [ ] Domain DNS configured
+- [ ] Health checks configured for load balancers
+
+#### Scaling Considerations
+
+- **Horizontal Scaling**: Run multiple web/worker instances behind a load balancer
+- **Database**: Use managed PostgreSQL (AWS RDS, Google Cloud SQL)
+- **Redis**: Use managed Redis (AWS ElastiCache, Redis Labs)
+- **Monitoring**: Implement comprehensive monitoring with alerts
+
+#### Troubleshooting
+
+**Check logs:**
 ```bash
-# Install PM2 globally
-npm install -g pm2
-
-# Start web server
-pm2 start npm --name "withdrawal-web" -- run start
-
-# Start worker
-pm2 start npm --name "withdrawal-worker" -- run worker
-
-# Save configuration
-pm2 save
-
-# View logs
-pm2 logs
+docker-compose logs -f web
+docker-compose logs -f worker
 ```
 
-### Environment Variables
-
-Add these production-specific variables:
-
-```env
-NODE_ENV=production
-RUN_MIGRATIONS_ON_STARTUP=false
-MPESA_CALLBACK_SECRET=your_secure_callback_secret
+**Restart services:**
+```bash
+docker-compose restart
 ```
 
-### Security Considerations
-
-- Use HTTPS in production
-- Store secrets in secure vault (not env vars)
-- Configure proper firewall rules
-- Monitor callback audit logs for fraud
-- Set up alerts for reconciliation discrepancies
-
-### Production Checklist
-
-- [ ] Environment variables properly configured for production
-- [ ] Database backups enabled and tested
-- [ ] Redis persistence configured
-- [ ] SSL/TLS certificates installed
-- [ ] Rate limiting configured on withdrawal endpoint
-- [ ] Monitoring and logging setup (e.g., Datadog, New Relic)
-- [ ] Error tracking configured (e.g., Sentry)
-- [ ] Database connection pooling optimized
-- [ ] BullMQ retry strategy configured appropriately
-- [ ] M-Pesa credentials rotated and secured in secrets manager
-- [ ] Health check endpoints configured for load balancers
-- [ ] Graceful shutdown tested
-
-### Docker Deployment Example
-
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-EXPOSE 8000
-CMD ["npm", "start"]
+**Update deployment:**
+```bash
+git pull
+docker-compose build --no-cache
+docker-compose up -d
 ```
+
+**Database issues:**
+```bash
+docker-compose exec postgres psql -U withdrawal_user -d withdrawal_engine
+```
+
+### Render Cloud Deployment
+
+For easy cloud deployment, use Render's managed services:
+
+#### Quick Render Setup
+
+1. **Pre-deployment check:**
+   ```bash
+   # Linux/Mac:
+   ./render-check.sh
+   
+   # Windows:
+   render-check.bat
+   ```
+
+2. **Follow the guide:**
+   ```bash
+   # See detailed instructions in render-deployment.md
+   cat render-deployment.md
+   ```
+
+#### Render Services Needed
+
+- **PostgreSQL Database** (~$7/month)
+- **Redis Instance** (~$6/month) 
+- **Web Service** (~$7/month)
+- **Background Worker** (~$7/month)
+
+#### Benefits
+
+- ✅ **Managed databases** - No server maintenance
+- ✅ **Auto-scaling** - Handles traffic spikes
+- ✅ **SSL certificates** - Automatic HTTPS
+- ✅ **Global CDN** - Fast worldwide delivery
+- ✅ **Built-in monitoring** - Logs and metrics included
+
+See `render-deployment.md` for complete step-by-step instructions.
 
 ## Monitoring & Logging
 

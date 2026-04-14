@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: withdrawal-postgres
+    environment:
+      POSTGRES_DB: withdrawal_engine
+      POSTGRES_USER: withdrawal_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password_change_me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U withdrawal_user -d withdrawal_engine"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - withdrawal-network
+
+  # Redis for BullMQ
+  redis:
+    image: redis:7-alpine
+    container_name: withdrawal-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - withdrawal-network
+
+  # Web Application
+  web:
+    build: .
+    container_name: withdrawal-web
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: withdrawal_engine
+      DB_USER: withdrawal_user
+      DB_PASSWORD: ${DB_PASSWORD:-secure_password_change_me}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      MPESA_CONSUMER_KEY: ${MPESA_CONSUMER_KEY}
+      MPESA_CONSUMER_SECRET: ${MPESA_CONSUMER_SECRET}
+      MPESA_TOKEN_URL: ${MPESA_TOKEN_URL}
+      MPESA_B2C_URL: ${MPESA_B2C_URL}
+      INITIATOR_NAME: ${INITIATOR_NAME}
+      SECURITY_CREDENTIALS: ${SECURITY_CREDENTIALS}
+      MPESA_SHORTCODE: ${MPESA_SHORTCODE}
+      CALLBACK_URL: ${CALLBACK_URL}
+      MPESA_WHITELISTED_IPS: ${MPESA_WHITELISTED_IPS}
+      MPESA_CALLBACK_SECRET: ${MPESA_CALLBACK_SECRET}
+      TRUST_PROXY: "true"
+      RUN_MIGRATIONS_ON_STARTUP: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - withdrawal-network
+
+  # Background Worker
+  worker:
+    build: .
+    container_name: withdrawal-worker
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: withdrawal_engine
+      DB_USER: withdrawal_user
+      DB_PASSWORD: ${DB_PASSWORD:-secure_password_change_me}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      MPESA_CONSUMER_KEY: ${MPESA_CONSUMER_KEY}
+      MPESA_CONSUMER_SECRET: ${MPESA_CONSUMER_SECRET}
+      MPESA_TOKEN_URL: ${MPESA_TOKEN_URL}
+      MPESA_B2C_URL: ${MPESA_B2C_URL}
+      INITIATOR_NAME: ${INITIATOR_NAME}
+      SECURITY_CREDENTIALS: ${SECURITY_CREDENTIALS}
+      MPESA_SHORTCODE: ${MPESA_SHORTCODE}
+      CALLBACK_URL: ${CALLBACK_URL}
+    command: ["npm", "run", "worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - withdrawal-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  withdrawal-network:
+    driver: bridge
