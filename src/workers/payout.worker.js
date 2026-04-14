@@ -6,7 +6,7 @@ import { logger } from "../utils/logger.utils.js";
 
 const worker = new Worker('payout-tasks', async (job) => {
     const { phoneNumber, amount, idempotencyKey, transactionId, userId } = job.data;
-    logger.info(`[Worker] Processing transaction ${transactionId} for ${phoneNumber}`);
+    logger.info(`[Worker] Processing transaction ${transactionId} for ${phoneNumber}-${userId}`);
 
     try {
         // Update transaction status from Pending to Processing
