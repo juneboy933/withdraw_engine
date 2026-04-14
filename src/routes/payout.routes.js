@@ -4,7 +4,7 @@ import { mpesaCallback } from '../controllers/mpesaCallback.controller.js';
 import { authMiddleware } from '../middlewares/auth.middleware.js';
 import { withdrawalLimiter } from '../middlewares/rateLimit.middleware.js';
 import { validateWithdrawal } from '../middlewares/validators.middleware.js';
-import { whitelistMpesa } from '../middlewares/ipWhitelist.middleware.js';
+import { validateMpesaCallback } from '../middlewares/ipWhitelist.middleware.js';
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.post(
 // Public routes
 router.post(
     '/mpesa/callback', 
-    whitelistMpesa, 
+    validateMpesaCallback, 
     mpesaCallback
 );
 

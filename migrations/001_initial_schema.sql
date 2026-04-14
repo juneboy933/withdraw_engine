@@ -39,3 +39,38 @@ CREATE TABLE IF NOT EXISTS ledger (
 CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON transactions(account_id);
 CREATE INDEX IF NOT EXISTS idx_ledger_transactions_id ON ledger(transaction_id);
+
+-- Durable outbox for transaction events
+CREATE TABLE IF NOT EXISTS outbox (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transaction_id UUID REFERENCES transactions(id) NOT NULL,
+    event_type TEXT NOT NULL,
+    payload JSONB NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'dispatching', 'completed', 'failed')),
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    last_error TEXT,
+    next_attempt_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_outbox_status_next_attempt ON outbox(status, next_attempt_at);
+
+-- Callback audit for fraud detection and reconciliation
+CREATE TABLE IF NOT EXISTS callback_audit (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transaction_id UUID REFERENCES transactions(id),
+    conversation_id UUID,
+    request_ip INET NOT NULL,
+    callback_secret_valid BOOLEAN NOT NULL DEFAULT FALSE,
+    ip_whitelist_valid BOOLEAN NOT NULL DEFAULT FALSE,
+    result_code INTEGER,
+    result_desc TEXT,
+    callback_status TEXT NOT NULL DEFAULT 'received',
+    payload JSONB NOT NULL,
+    received_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_callback_audit_transaction_id ON callback_audit(transaction_id);
+CREATE INDEX IF NOT EXISTS idx_callback_audit_conversation_id ON callback_audit(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_callback_audit_received_at ON callback_audit(received_at);

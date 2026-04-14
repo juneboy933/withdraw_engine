@@ -10,5 +10,6 @@ export const payoutQueue = new Queue('payout-tasks', {
             delay: 10000
         },
         removeOnComplete: true,
-    }    
+        removeOnFail: true
+    }
 });

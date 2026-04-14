@@ -95,6 +95,8 @@ withdrawal-engine/
    CALLBACK_URL=https://your-domain.com/api/v1/mpesa/callback
    MPESA_WHITELISTED_IPS=196.201.214.200,196.201.214.206,196.201.213.114,196.201.214.207,196.201.214.208,196.50.137.33
    TRUST_PROXY=false
+   MPESA_CALLBACK_SECRET=your_callback_secret_for_hmac_verification
+   RUN_MIGRATIONS_ON_STARTUP=false
    ```
 
 ## Getting Started
@@ -139,6 +141,7 @@ Submit a withdrawal request to be processed. The request must include a valid JW
 **Headers:**
 ```http
 Authorization: Bearer <jwt-token>
+Idempotency-Key: <client-generated-uuid>
 ```
 
 **Request Body:**
@@ -168,7 +171,34 @@ Authorization: Bearer <jwt-token>
 ### 2. M-Pesa Callback Handler
 **POST** `/api/v1/mpesa/callback`
 
-Webhook endpoint for M-Pesa to send transaction status updates. This is called by M-Pesa when a B2C transaction completes.
+Webhook endpoint for M-Pesa to send transaction status updates. Includes HMAC verification and audit logging.
+
+### 4. Reconciliation API
+**GET** `/api/admin/v1/reconcile`
+
+Returns reconciliation data for stuck transactions, orphan callbacks, and failed outbox items.
+
+**Response:**
+```json
+{
+  "stuckTransactions": [...],
+  "orphanCallbacks": [...],
+  "stuckOutbox": [...],
+  "timestamp": "2026-04-14T..."
+}
+```
+
+**POST** `/api/admin/v1/resolve/:transactionId`
+
+Manual resolution for stuck transactions.
+
+**Request Body:**
+```json
+{
+  "action": "refund|mark_success|mark_failed",
+  "reason": "Manual resolution reason"
+}
+```
 
 ### 3. Health Check
 **GET** `/health`
@@ -263,6 +293,69 @@ npm test
 This project includes validation tests for configuration and callback IP handling.
 
 ## Deployment
+
+### Production Setup
+
+For production deployment, run the web server and worker as separate processes:
+
+1. **Web Server** (handles HTTP requests):
+   ```bash
+   npm start
+   ```
+
+2. **Worker Process** (processes payout jobs):
+   ```bash
+   npm run worker
+   ```
+
+3. **Database Migrations** (run once or via CI/CD):
+   ```bash
+   npm run migrate
+   ```
+
+4. **Reconciliation** (run periodically or on-demand):
+   ```bash
+   npm run reconcile
+   ```
+
+### Process Management
+
+Use a process manager like PM2 for production:
+
+```bash
+# Install PM2 globally
+npm install -g pm2
+
+# Start web server
+pm2 start npm --name "withdrawal-web" -- run start
+
+# Start worker
+pm2 start npm --name "withdrawal-worker" -- run worker
+
+# Save configuration
+pm2 save
+
+# View logs
+pm2 logs
+```
+
+### Environment Variables
+
+Add these production-specific variables:
+
+```env
+NODE_ENV=production
+RUN_MIGRATIONS_ON_STARTUP=false
+MPESA_CALLBACK_SECRET=your_secure_callback_secret
+```
+
+### Security Considerations
+
+- Use HTTPS in production
+- Store secrets in secure vault (not env vars)
+- Configure proper firewall rules
+- Monitor callback audit logs for fraud
+- Set up alerts for reconciliation discrepancies
 
 ### Production Checklist
 

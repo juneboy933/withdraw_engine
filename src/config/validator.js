@@ -15,7 +15,8 @@ export const requiredEnvKeys = [
     'INITIATOR_NAME',
     'SECURITY_CREDENTIALS',
     'MPESA_SHORTCODE',
-    'CALLBACK_URL'
+    'CALLBACK_URL',
+    'MPESA_CALLBACK_SECRET'
 ];
 
 export const validateAppEnv = (inputEnv = env) => {

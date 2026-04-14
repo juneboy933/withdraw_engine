@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 import helmet from 'helmet';
 import withdrawalRoutes from './src/routes/payout.routes.js';
 import userRoutes from './src/routes/user.routes.js';
+import reconciliationRoutes from './src/routes/reconciliation.routes.js';
 import { validateAppEnv } from './src/config/validator.js';
 import { runMigrations } from './src/database/runMigrations.js';
-import { payoutQueue } from './src/queues/payout.queue.js';
 import { pool } from './src/database/database.config.js';
 import { requestLogger } from './src/middlewares/requestLogger.middleware.js';
 import { notFoundHandler, errorHandler } from './src/middlewares/error.middleware.js';
@@ -26,6 +26,7 @@ app.use(requestLogger);
 // Routes
 app.use('/api/v1', withdrawalRoutes);
 app.use('/api/user/v1', userRoutes);
+app.use('/api/admin/v1', reconciliationRoutes);
 
 // Health Check
 app.get('/health', (_, res) => {
@@ -39,14 +40,11 @@ app.get('/health', (_, res) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-let payoutWorker;
-
 try {
-    await runMigrations();
-    const workerModule = await import('./src/workers/payout.worker.js');
-    payoutWorker = workerModule.payoutWorker;
-    console.log('✔ Database migrations complete');
-    console.log('✔ Payout worker initialized');
+    if (process.env.RUN_MIGRATIONS_ON_STARTUP === 'true') {
+        await runMigrations();
+        console.log('✔ Database migrations complete');
+    }
 } catch (error) {
     console.error('Initialization failed:', error);
     process.exit(1);

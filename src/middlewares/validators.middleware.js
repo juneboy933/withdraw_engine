@@ -10,7 +10,16 @@ export const validateWithdrawal = async (req, res, next) => {
             .required(),
         amount: Joi.number().positive().precision(2).min(10).required()
     });
-    const { error } = schema.validate(req.body);
-    if (error) return res.status(400).json({ error: error.details[0].message });
+
+    const headersSchema = Joi.object({
+        'idempotency-key': Joi.string().uuid().required()
+    }).unknown(true);
+
+    const { error: bodyError } = schema.validate(req.body);
+    if (bodyError) return res.status(400).json({ error: bodyError.details[0].message });
+
+    const { error: headerError } = headersSchema.validate(req.headers);
+    if (headerError) return res.status(400).json({ error: 'Idempotency-Key header is required and must be a valid UUID.' });
+
     next();
 };

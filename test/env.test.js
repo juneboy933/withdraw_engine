@@ -18,7 +18,8 @@ const env = {
     INITIATOR_NAME: 'test',
     SECURITY_CREDENTIALS: 'secret',
     MPESA_SHORTCODE: '123456',
-    CALLBACK_URL: 'https://example.com/callback'
+    CALLBACK_URL: 'https://example.com/callback',
+    MPESA_CALLBACK_SECRET: 'test-secret'
 };
 
 assert.strictEqual(validateAppEnv(env), true);
